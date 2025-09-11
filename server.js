@@ -8,14 +8,14 @@ const PORT = process.env.PORT || 5000;
 
 // ------------------ MIDDLEWARE ------------------ //
 
-// Allow requests from your frontend
+// Allow requests from your frontend (GitHub Pages)
 app.use(cors({
-  origin: "https://morarasospeter.github.io" // replace with your GitHub Pages URL
+  origin: "https://morarasospeter.github.io" // <- updated to your frontend URL
 }));
 
 app.use(express.json());
 
-// ------------------ FILE PATHS ------------------ //
+// ------------------ FILE PATHS ------------------
 
 const QUESTIONS_FILE = path.join(__dirname, "questions.json");
 
