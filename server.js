@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,12 +11,12 @@ const PORT = process.env.PORT || 5000;
 
 // Allow requests from your frontend (GitHub Pages)
 app.use(cors({
-  origin: "https://morarasospeter.github.io" // <- updated to your frontend URL
+  origin: "https://morarasospeter.github.io" // <- update to your frontend URL
 }));
 
 app.use(express.json());
 
-// ------------------ FILE PATHS ------------------
+// ------------------ FILE PATHS ------------------ //
 
 const QUESTIONS_FILE = path.join(__dirname, "questions.json");
 
@@ -39,10 +40,50 @@ function saveQuestions(questions) {
   fs.writeFileSync(QUESTIONS_FILE, JSON.stringify(questions, null, 2));
 }
 
+// ------------------ EMAIL SETUP ------------------ //
+// ⚠️ Replace YOUR_APP_PASSWORD with your Gmail App Password
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "morarasospeter01@gmail.com",
+    pass: "SoSpeter911@!"  // use 16-digit app password, not normal Gmail password
+  }
+});
+
+// Send email to tutor (you)
+async function notifyTutor(newQuestion) {
+  try {
+    await transporter.sendMail({
+      from: `"V@StHelp" <morarasospeter01@gmail.com>`,
+      to: "morarasospeter01@gmail.com", // your own email
+      subject: "📩 New Assignment Question Submitted",
+      text: `A new question was submitted:\n\nName: ${newQuestion.name}\nEmail: ${newQuestion.email}\nQuestion: ${newQuestion.question}\n\nSubmitted on: ${newQuestion.date}`
+    });
+    console.log("✅ Tutor notified by email");
+  } catch (err) {
+    console.error("❌ Failed to notify tutor:", err.message);
+  }
+}
+
+// Send confirmation email to student
+async function notifyStudent(newQuestion) {
+  try {
+    await transporter.sendMail({
+      from: `"V@StHelp" <morarasospeter01@gmail.com>`,
+      to: newQuestion.email,
+      subject: "✅ Your Question Has Been Received",
+      text: `Hello ${newQuestion.name},\n\nWe have received your question:\n"${newQuestion.question}"\n\nOur tutor will review it and reply soon.\n\nThank you,\nV@StHelp Team`
+    });
+    console.log("✅ Student notified by email");
+  } catch (err) {
+    console.error("❌ Failed to notify student:", err.message);
+  }
+}
+
 // ------------------ ROUTES ------------------ //
 
 // Student submits question
-app.post("/api/questions", (req, res) => {
+app.post("/api/questions", async (req, res) => {
   const { name, email, question } = req.body;
 
   if (!name || !email || !question) {
@@ -61,6 +102,10 @@ app.post("/api/questions", (req, res) => {
 
   questions.push(newQuestion);
   saveQuestions(questions);
+
+  // send email notifications
+  await notifyTutor(newQuestion);
+  await notifyStudent(newQuestion);
 
   res.json({ success: true, message: "Question submitted successfully" });
 });
