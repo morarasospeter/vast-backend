@@ -41,12 +41,12 @@ function saveQuestions(questions) {
 }
 
 // ------------------ EMAIL SETUP ------------------ //
-// ⚠️ Replace YOUR_APP_PASSWORD with your Gmail App Password
+// ✅ Using your Gmail App Password here
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "morarasospeter01@gmail.com",
-    pass: "SoSpeter911@!"  // use 16-digit app password, not normal Gmail password
+    pass: "vksw oish ydbk yula"  // <-- your 16-digit Gmail App Password
   }
 });
 
